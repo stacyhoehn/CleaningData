@@ -47,6 +47,9 @@ names(subjects_data) <- 'Subject' #change the column heading
 #concatenate the subjects, activities, and features data 
 all_data <- cbind(subjects_data,activities_data,features_data)
 
+# At this point, all_data is a dataset consisting of 
+# 10299 observations of 563 variables (2 identifiers and 561 feature measurements)
+
 
 # Step 2
 # Extract only the measurements on the mean and standard deviation for each measurement
@@ -72,6 +75,7 @@ activity_labels <- read.table("activity_labels.txt")
 all_data$Activity <- activity_labels[all_data$Activity, 2]
 mean_and_std_data$Activity <- activity_labels[mean_and_std_data$Activity,2]
 
+
 ##Step 4:
 # Appropriately label the data set with descriptive variable names
 ###############################################################################
@@ -93,9 +97,8 @@ for (i in 3:length(names(mean_and_std_data)))
   names(mean_and_std_data)[i] = gsub("[Bb]ody[Bb]ody","Body",names(mean_and_std_data)[i])
 };
 
-# At this point, mean_and_std data is a tidy data set consisting of 
-# 10299 observations of 563 variables (2 identifiers and 561 feature measurements)
-
+#At this point, mean_and_std_data is a tidy dataset consisting of 
+#10299 observations of 68 variables (2 identifiers and 66 feature measurements)
 
 ##Step 5: Create a second, independent tidy data set with the average of each variable
 # for each activity and each subject
