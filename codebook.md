@@ -20,9 +20,11 @@ To see a more thorough description of the original dataset, you can view
 
 ## The Transformations
 
-The training and test data were merged back together to obtain a single dataset that contained 563 columns: the subject's ID number, the activity type ID, and 561 feature measurements.   The activity ID was then replaced by a descriptive label for the type of activity that was performed; for example, an activity ID of "1" was replaced with "WALKING".  Each column was also given a more descriptive name, like "Subject", "Activity", or a description of the feature measurement from features_info.txt.  This produced a tidy dataset containing 10,299 observations of 563 variables (2 identifiers and 561 feature measurements).
+The training and test data were merged back together to obtain a single dataset that contained 563 columns: the subject's ID number, the activity type ID, and 561 feature measurements.   The activity ID was then replaced by a descriptive label for the type of activity that was performed; for example, an activity ID of "1" was replaced with "WALKING".  Each column was also given a more descriptive name, like "Subject", "Activity", or a description of the feature measurement from features_info.txt.  This produced a dataset containing 10,299 observations of 563 variables (2 identifiers and 561 feature measurements).
 
-To obtain a smaller tidy dataset, only those columns containing information about the mean and standard deviation for each measurement  were extracted.  I interpreted these directions to include only those columns that contained the substring mean() or std() in their name.  This dataset was then reshaped so that it contained only one row for each of the 180 possible subject + activity pairs, with the feature measurements being averaged.  This resulted in a new tidy dataset with 180 observations of 68 variables (2 identifiers and 66 feature measurement averages).    
+To obtain a smaller tidy dataset, only those columns containing information about the mean and standard deviation for each measurement  were extracted.  (I interpreted these directions to include only those columns that contained the substring mean() or std() in their name.)  This dataset contained 10,299 observations of 68 variables (2 identifiers and 66 feature measurements).
+
+This dataset was then reshaped to create a new tidy dataset that contained only one row for each of the 180 possible subject + activity pairs, with the feature measurements being averaged.  This resulted in a new tidy dataset with 180 observations of 68 variables (2 identifiers and 66 feature measurement averages).    
 
 ## The Variables 
 
