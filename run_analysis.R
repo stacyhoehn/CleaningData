@@ -1,6 +1,7 @@
 library(reshape2)
 
-## Preliminaries: Download the data set and set the working directory
+## Step 0: Download the data set and set the working directory
+##############################################################
 
 #create a directory called "data" if it does not already exist
 if(!file.exists("data"))
@@ -18,71 +19,95 @@ unzip("data/zipped_data.zip",exdir="./data")
 #set the working directory to the location of the dataset
 setwd("./data/UCI HAR Dataset")
 
-# Step 1
-# Merge the training and test sets to create one data set
+## Step 1: Merges the training and the test sets to create one data set
 ###############################################################################
 
-x_train <- read.table("train/X_train.txt")
-y_train <- read.table("train/y_train.txt")
-subject_train <- read.table("train/subject_train.txt")
+#read in the names of all of the features
+features <- read.table("features.txt")
 
-x_test <- read.table("test/X_test.txt")
-y_test <- read.table("test/y_test.txt")
-subject_test <- read.table("test/subject_test.txt")
+#read in the features data
+features_train <- read.table("train/X_train.txt")
+features_test <- read.table("test/X_test.txt")
+features_data <- rbind(features_train,features_test)
+names(features_data) <- features[,2] #give descriptive column headings
 
-# create 'x' data set
-x_data <- rbind(x_train, x_test)
+#read in the activities data
+activities_train <- read.table("train/y_train.txt")
+activities_test <- read.table("test/y_test.txt")
+activities_data <- rbind(activities_train,activities_test)
+names(activities_data) <- 'Activity' #change the column heading
 
-# create 'y' data set
-y_data <- rbind(y_train, y_test)
+#read in the subjects data
+subjects_train <- read.table("train/subject_train.txt")
+subjects_test <- read.table("test/subject_test.txt")
+subjects_data <- rbind(subjects_train,subjects_test)
+names(subjects_data) <- 'Subject' #change the column heading
 
-# create 'subject' data set
-subject_data <- rbind(subject_train, subject_test)
+
+#concatenate the subjects, activities, and features data 
+all_data <- cbind(subjects_data,activities_data,features_data)
+
 
 # Step 2
 # Extract only the measurements on the mean and standard deviation for each measurement
 ###############################################################################
 
-features <- read.table("features.txt")
 
-# get only columns with mean() or std() in their names
+#determine which features have mean() or std() in their names
 mean_and_std_features <- grep("-(mean\\(\\)|std\\(\\))", features[, 2])
 
-# subset the desired columns
-select_x_data <- x_data[, mean_and_std_features]
+#extract the desired columns from the features data set
+selected_features_data <- features_data[,mean_and_std_features]
 
-# give descriptive feature names to columns
-names(select_x_data) <- features[mean_and_std_features, 2]
+#concatenate the subjects, activities, and selected features data sets
+mean_and_std_data <- cbind(subjects_data,activities_data,selected_features_data)
 
-# Step 3
-# Use descriptive activity names to name the activities in the data set
+##Step 3: Use descriptive activity names to name the activities in the data set
 ###############################################################################
 
-activities <- read.table("activity_labels.txt")
+#read in the different activity types
+activity_labels <- read.table("activity_labels.txt")
 
 # update values with correct activity names
-y_data[, 1] <- activities[y_data[, 1], 2]
+all_data$Activity <- activity_labels[all_data$Activity, 2]
+mean_and_std_data$Activity <- activity_labels[mean_and_std_data$Activity,2]
 
-# correct column name
-names(y_data) <- "activity"
-
-# Step 4
+##Step 4:
 # Appropriately label the data set with descriptive variable names
 ###############################################################################
 
-# correct column name
-names(subject_data) <- "subject"
+# The columns were already named in Step 1, but in this step, I will 
+# clean up the variable names a little more
+for (i in 3:length(names(mean_and_std_data))) 
+{
+  #the prefix t represents time
+  names(mean_and_std_data)[i] = gsub("^(t)","time-",names(mean_and_std_data)[i])
+  
+  #the prefix f represents frequency
+  names(mean_and_std_data)[i] = gsub("^(f)","freq-",names(mean_and_std_data)[i])
+  
+  #removes extra parentheses after mean and std
+  names(mean_and_std_data)[i] = gsub("\\()","",names(mean_and_std_data)[i])
+  
+  #removes the duplicate in variables named BodyBody
+  names(mean_and_std_data)[i] = gsub("[Bb]ody[Bb]ody","Body",names(mean_and_std_data)[i])
+};
 
-# bind all the data in a single data set
-all_data <- cbind(select_x_data, y_data, subject_data)
+# At this point, mean_and_std data is a tidy data set consisting of 
+# 10299 observations of 563 variables (2 identifiers and 561 feature measurements)
 
-# Step 5
-# Create a second, independent tidy data set with the average of each variable
+
+##Step 5: Create a second, independent tidy data set with the average of each variable
 # for each activity and each subject
 ###############################################################################
 
-# 66 <- 68 columns but last two (activity & subject)
-melt_all_data <- melt(all_data,id=c("subject","activity"),measure.vars=names(all_data)[-c(67,68)])
-averaged_data <- dcast(melt_all_data,subject+activity~variable,mean)
+#reshape the data so that there is one row for each subject+activity pairing
+#with averages given
+melted_data <- melt(mean_and_std_data,id=c('Subject','Activity'),measure.vars=names(mean_and_std_data)[-(1:2)])
+averaged_data <- dcast(melted_data,Subject+Activity~variable,mean)
 
-write.table(averaged_data, "averaged_data.txt", row.name=FALSE)
+#write the tidy data to a text file
+write.table(averaged_data, "tidy_averages.txt", row.name=FALSE)
+
+#this final tidy dataset contains 180 observations of 
+#68 variables (2 identifiers and 66 feature measurements)
